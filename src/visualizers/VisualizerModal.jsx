@@ -122,10 +122,11 @@ export default function VisualizerModal({ question, onClose }) {
   const [isPlaying,   setIsPlaying]   = useState(false);
   const [speedIdx,    setSpeedIdx]    = useState(1);
   const [language,    setLanguage]    = useState('python'); // 'python' | 'java'
+  const [testCaseIdx, setTestCaseIdx] = useState(0);
   const intervalRef = useRef(null);
 
   const approach    = solution.approaches[approachIdx];
-  const steps       = approach.steps;
+  const steps       = approach.steps[testCaseIdx] || approach.steps[0] || [];
   const currentStep = steps[stepIdx];
   const activeCode  = approach[language] || approach.python || '';
 
@@ -152,6 +153,10 @@ export default function VisualizerModal({ question, onClose }) {
 
   const switchApproach = (idx) => {
     setIsPlaying(false); setApproachIdx(idx); setStepIdx(0);
+  };
+
+  const switchTestCase = (idx) => {
+    setIsPlaying(false); setTestCaseIdx(idx); setStepIdx(0);
   };
 
   const goNext  = () => { if (stepIdx < steps.length - 1) setStepIdx(s => s + 1); else setIsPlaying(false); };
@@ -204,16 +209,30 @@ export default function VisualizerModal({ question, onClose }) {
           ))}
         </div>
 
-        {/* ── COMPLEXITY BANNER ── */}
-        <div className="viz-complexity">
-          <div className="viz-complex-item">
-            <Clock size={13} />
-            <span>Time: <strong>{approach.complexity.time}</strong></span>
+        {/* ── TEST CASES & COMPLEXITY ── */}
+        <div className="viz-mid-bar">
+          <div className="viz-testcases">
+            {solution.testCases?.map((tc, i) => (
+              <button
+                key={i}
+                className={`viz-testcase-btn ${i === testCaseIdx ? 'active' : ''}`}
+                onClick={() => switchTestCase(i)}
+              >
+                {tc.label || `Case ${i+1}`}
+              </button>
+            ))}
           </div>
+          
+          <div className="viz-complexity">
+            <div className="viz-complex-item">
+              <Clock size={13} />
+              <span>Time: <strong>{approach.complexity.time}</strong></span>
+            </div>
           <div className="viz-complex-divider" />
-          <div className="viz-complex-item">
-            <Database size={13} />
-            <span>Space: <strong>{approach.complexity.space}</strong></span>
+            <div className="viz-complex-item">
+              <Database size={13} />
+              <span>Space: <strong>{approach.complexity.space}</strong></span>
+            </div>
           </div>
         </div>
 
@@ -235,7 +254,7 @@ export default function VisualizerModal({ question, onClose }) {
               <VisualizerEngine
                 visualType={solution.visualType}
                 step={currentStep}
-                data={solution.example}
+                data={solution.testCases?.[testCaseIdx]?.data}
               />
             </div>
 
