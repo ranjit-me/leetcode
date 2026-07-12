@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { CheckCircle, Circle, ExternalLink, ChevronDown, ChevronUp, Trash2, Code } from 'lucide-react';
+import { CheckCircle, Circle, ExternalLink, ChevronDown, ChevronUp, Trash2, Code, PlayCircle } from 'lucide-react';
+import VisualizerModal from './visualizers/VisualizerModal.jsx';
 
 function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDeleteCode }) {
   const [expanded, setExpanded] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [showVisualizer, setShowVisualizer] = useState(false);
 
   const handleSave = () => {
     if (!newTitle.trim() || !newCode.trim()) return;
@@ -64,6 +66,21 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
             <Code size={16} />
             Snippets ({questionCodes.length})
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          <button
+            onClick={() => setShowVisualizer(true)}
+            className="btn btn-visualize"
+            style={{
+              padding: '0.5rem 1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+            title="Animate solution"
+          >
+            <PlayCircle size={16} />
+            Visualize
           </button>
           
           <a 
@@ -156,6 +173,14 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
             </div>
           </div>
         </div>
+      )}
+
+      {/* Visualizer Modal */}
+      {showVisualizer && (
+        <VisualizerModal
+          question={q}
+          onClose={() => setShowVisualizer(false)}
+        />
       )}
     </div>
   );
