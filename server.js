@@ -33,6 +33,7 @@ app.get('/api/progress', async (req, res) => {
     }
     res.json(progress.solvedIds);
   } catch (error) {
+    console.error("GET error:", error);
     res.status(500).json({ error: 'Failed to fetch progress' });
   }
 });
@@ -49,6 +50,7 @@ app.post('/api/progress', async (req, res) => {
     await progress.save();
     res.json({ success: true, solvedIds: progress.solvedIds });
   } catch (error) {
+    console.error("POST error:", error);
     res.status(500).json({ error: 'Failed to update progress' });
   }
 });

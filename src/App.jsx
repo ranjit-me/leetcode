@@ -12,7 +12,13 @@ function App() {
   useEffect(() => {
     fetch('http://localhost:5005/api/progress')
       .then(res => res.json())
-      .then(data => setSolvedIds(data))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setSolvedIds(data);
+        } else {
+          console.error("Backend returned an error or invalid data:", data);
+        }
+      })
       .catch(err => console.error("Failed to load progress:", err));
   }, []);
 
