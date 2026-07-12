@@ -10,7 +10,7 @@ function App() {
 
   // Fetch initial solved state from backend
   useEffect(() => {
-    fetch('http://localhost:5005/api/progress')
+    fetch('/api/progress')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -31,7 +31,7 @@ function App() {
     setSolvedIds(newSolvedIds);
     
     // Sync with backend
-    fetch('http://localhost:5005/api/progress', {
+    fetch('/api/progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ solvedIds: newSolvedIds })
