@@ -1,26 +1,61 @@
 import { useState, useEffect, useMemo } from 'react';
 import { CheckCircle, Circle, ExternalLink, Terminal, Search, Award } from 'lucide-react';
 import questionsData from './questions.json';
+import QuestionCard from './QuestionCard';
 import './index.css';
 
 function App() {
   const [solvedIds, setSolvedIds] = useState([]);
   const [activeTopic, setActiveTopic] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [savedCodes, setSavedCodes] = useState([]);
 
-  // Fetch initial solved state from backend
+  // Fetch initial solved state and saved codes from backend
   useEffect(() => {
-    fetch('/api/progress')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setSolvedIds(data);
+    Promise.all([
+      fetch('/api/progress').then(res => res.json()),
+      fetch('/api/saved-codes').then(res => res.json())
+    ])
+      .then(([progressData, codesData]) => {
+        if (Array.isArray(progressData)) {
+          setSolvedIds(progressData);
         } else {
-          console.error("Backend returned an error or invalid data:", data);
+          console.error("Backend returned an error for progress:", progressData);
+        }
+        if (Array.isArray(codesData)) {
+          setSavedCodes(codesData);
+        } else {
+          console.error("Backend returned an error for saved codes:", codesData);
         }
       })
-      .catch(err => console.error("Failed to load progress:", err));
+      .catch(err => console.error("Failed to load data:", err));
   }, []);
+
+  const handleSaveCode = (questionId, title, code) => {
+    fetch('/api/saved-codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId, title, code })
+    })
+      .then(res => res.json())
+      .then(newCode => {
+        if (newCode._id) {
+          setSavedCodes([...savedCodes, newCode]);
+        }
+      })
+      .catch(err => console.error("Failed to save code:", err));
+  };
+
+  const handleDeleteCode = (id) => {
+    fetch(`/api/saved-codes/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSavedCodes(savedCodes.filter(c => c._id !== id));
+        }
+      })
+      .catch(err => console.error("Failed to delete code:", err));
+  };
 
   const toggleSolved = (id) => {
     const newSolvedIds = solvedIds.includes(id) 
@@ -138,46 +173,15 @@ function App() {
             {filteredQuestions.map(q => {
               const isSolved = solvedIds.includes(q.id);
               return (
-                <div 
-                  key={q.id} 
-                  className="question-card" 
-                  style={{ 
-                    flexDirection: 'row', 
-                    alignItems: 'center', 
-                    padding: '1.25rem',
-                    background: isSolved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.03)',
-                    borderColor: isSolved ? 'rgba(16, 185, 129, 0.2)' : 'transparent'
-                  }}
-                >
-                  <button 
-                    onClick={() => toggleSolved(q.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '1rem', color: isSolved ? 'var(--success)' : 'var(--text-muted)' }}
-                  >
-                    {isSolved ? <CheckCircle size={24} /> : <Circle size={24} />}
-                  </button>
-                  
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-                      <span className="code-font" style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>#{q.id}</span>
-                      <span style={{ fontSize: '1.1rem', fontWeight: 500, color: isSolved ? 'var(--text-muted)' : 'var(--text-main)', textDecoration: isSolved ? 'line-through' : 'none' }}>
-                        {q.title}
-                      </span>
-                    </div>
-                    <span className={`difficulty-badge diff-${q.difficulty.toLowerCase()}`}>
-                      {q.difficulty}
-                    </span>
-                  </div>
-
-                  <a 
-                    href={q.link} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="btn btn-secondary"
-                    style={{ textDecoration: 'none', padding: '0.5rem 1rem' }}
-                  >
-                    Solve on LeetCode <ExternalLink size={16} />
-                  </a>
-                </div>
+                <QuestionCard
+                  key={q.id}
+                  q={q}
+                  isSolved={isSolved}
+                  toggleSolved={toggleSolved}
+                  savedCodes={savedCodes}
+                  onSaveCode={handleSaveCode}
+                  onDeleteCode={handleDeleteCode}
+                />
               );
             })}
             
