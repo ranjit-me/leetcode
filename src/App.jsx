@@ -94,7 +94,7 @@ function App() {
       {/* Sidebar - Topics */}
       <aside className="sidebar glass-panel">
         <div className="sidebar-header">
-          <Terminal size={24} className="text-primary" />
+          <img src="/logo.png" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
           <h1>LeetCode Tracker</h1>
         </div>
         
