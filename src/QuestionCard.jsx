@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle, Circle, ExternalLink, ChevronDown, ChevronUp, Trash2, Code, PlayCircle } from 'lucide-react';
 import VisualizerModal from './visualizers/VisualizerModal.jsx';
 
@@ -176,11 +177,12 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
       )}
 
       {/* Visualizer Modal */}
-      {showVisualizer && (
+      {showVisualizer && createPortal(
         <VisualizerModal
           question={q}
           onClose={() => setShowVisualizer(false)}
-        />
+        />,
+        document.body
       )}
     </div>
   );

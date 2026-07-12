@@ -864,3 +864,18 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(251,191,36,0.3);
   color: #fde68a;
 }
+
+/* Enhancing the step description to be more prominent */
+.viz-step-desc {
+  margin-top: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  width: 100%;
+}
