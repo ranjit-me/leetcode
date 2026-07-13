@@ -3,10 +3,13 @@
  * Handles: 1-D DP (dpArr), 2-D DP (dpGrid), Prefix Sum.
  */
 export default function DPTableVisualizer({ step, data, is2D }) {
-  const dpArr = step?.dpArr || [];
+  // dpArr: from step or build a zeroed table from data.input length
+  const inputArr = data?.input || [];
+  const dpArr = step?.dpArr || (inputArr.length > 0 ? new Array(inputArr.length + 1).fill(0) : []);
   const dpGrid = step?.dpGrid || null;
   const highlighted1D = step?.highlighted || [];
   const highlighted2D = step?.highlighted || []; // array of [r,c]
+
 
   const isHighlighted2D = (r, c) => highlighted2D.some(([hr, hc]) => hr === r && hc === c);
 

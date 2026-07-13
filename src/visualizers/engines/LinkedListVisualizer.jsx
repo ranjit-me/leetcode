@@ -8,7 +8,13 @@ const NODE_H = 40;
 const ARROW_W = 30;
 
 export default function LinkedListVisualizer({ step, data }) {
-  const nodes = step?.nodes || data?.list1 || [1, 2, 3, 4, 5];
+  // Support: step.nodes, data.nodes, data.list1, data.input, or default
+  const nodes = step?.nodes
+    || data?.nodes
+    || data?.list1
+    || data?.input
+    || [1, 2, 3, 4, 5];
+
   const highlighted = step?.highlighted || [];
   const pointers = step?.pointers || {};
   const isCycle = step?.cycle || false;

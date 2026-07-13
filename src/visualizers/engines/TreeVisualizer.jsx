@@ -36,9 +36,37 @@ const DEFAULT_TREE = {
   right: { val: 7, left: { val: 6 }, right: { val: 9 } },
 };
 
-// Build a simple tree from traversal order (for steps that specify traversalOrder)
+// Build a tree from level-order BFS array (LeetCode format: null for missing nodes)
+function buildTree(arr) {
+  if (!arr || arr.length === 0) return null;
+  if (arr[0] == null) return null;
+  const root = { val: arr[0], left: null, right: null };
+  const queue = [root];
+  let i = 1;
+  while (i < arr.length && queue.length > 0) {
+    const node = queue.shift();
+    if (i < arr.length && arr[i] != null) {
+      node.left = { val: arr[i], left: null, right: null };
+      queue.push(node.left);
+    }
+    i++;
+    if (i < arr.length && arr[i] != null) {
+      node.right = { val: arr[i], left: null, right: null };
+      queue.push(node.right);
+    }
+    i++;
+  }
+  return root;
+}
+
 function getExampleTree(data) {
   if (data?.tree) return data.tree;
+  // Support LeetCode level-order array format via data.nodes or data.input
+  const arr = data?.nodes || data?.input;
+  if (Array.isArray(arr) && arr.length > 0) {
+    const tree = buildTree(arr);
+    if (tree) return tree;
+  }
   return DEFAULT_TREE;
 }
 

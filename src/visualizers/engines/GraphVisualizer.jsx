@@ -16,9 +16,25 @@ function circleLayout(nodeCount, cx, cy, r) {
 const NODE_R = 22;
 
 export default function GraphVisualizer({ step, data }) {
-  const nodes = data?.nodes || [0, 1, 2, 3];
-  const edges = data?.edges || [[0, 1], [1, 2], [2, 3], [3, 0]];
-  const highlightedNodes = step?.highlightedNodes || [];
+  // Support multiple data formats: { nodes, edges } or { input } or adjacency list
+  const rawNodes = data?.nodes;
+  const rawEdges = data?.edges;
+  const rawInput = data?.input;
+
+  let nodes, edges;
+  if (Array.isArray(rawNodes) && rawNodes.length > 0) {
+    nodes = rawNodes;
+    edges = rawEdges || [];
+  } else if (Array.isArray(rawInput) && rawInput.length > 0) {
+    // Treat flat array as a path graph: 0-1-2-...-n
+    nodes = rawInput.map((_, i) => i);
+    edges = nodes.slice(0, -1).map((n, i) => [i, i + 1]);
+  } else {
+    nodes = [0, 1, 2, 3];
+    edges = [[0, 1], [1, 2], [2, 3], [3, 0]];
+  }
+
+  const highlightedNodes = step?.highlightedNodes || step?.highlights || [];
   const highlightedEdges = step?.highlightedEdges || [];
 
   const W = 440;

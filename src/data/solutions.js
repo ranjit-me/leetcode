@@ -959,7 +959,213 @@ const arraysHashing = {
       },
     ],
   },
+
+  // ─── #88 Merge Sorted Array ───────────────────────────────────
+  88: {
+    visualType: 'array',
+    testCases: [
+      { data: { input: [1,2,3,0,0,0], m: 3, input2: [2,5,6], n: 3 }, label: 'Case 1' },
+      { data: { input: [1],          m: 1, input2: [],        n: 0 }, label: 'Case 2' },
+      { data: { input: [0],          m: 0, input2: [1],        n: 1 }, label: 'Case 3' },
+    ],
+    approaches: [
+      {
+        name: 'Three Pointers (from end)',
+        complexity: { time: 'O(m+n)', space: 'O(1)' },
+        python: `class Solution:
+    def merge(self, nums1: List[int], m: int, nums2: List[int], n: int) -> None:
+        p1, p2, p = m - 1, n - 1, m + n - 1
+        while p1 >= 0 and p2 >= 0:
+            if nums1[p1] > nums2[p2]:
+                nums1[p] = nums1[p1]
+                p1 -= 1
+            else:
+                nums1[p] = nums2[p2]
+                p2 -= 1
+            p -= 1
+        while p2 >= 0:
+            nums1[p] = nums2[p2]
+            p2 -= 1
+            p -= 1`,
+        java: `class Solution {
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int p1 = m - 1, p2 = n - 1, p = m + n - 1;
+        while (p1 >= 0 && p2 >= 0) {
+            if (nums1[p1] > nums2[p2]) nums1[p--] = nums1[p1--];
+            else nums1[p--] = nums2[p2--];
+        }
+        while (p2 >= 0) nums1[p--] = nums2[p2--];
+    }
+}`,
+        steps: [
+          [ // Case 1: nums1=[1,2,3,0,0,0], nums2=[2,5,6]
+            { desc: 'p1=2(val=3), p2=2(val=6), p=5. Compare 3 vs 6.', highlights:[2,5], pointers:{p1:2,p2:2,p:5}, codeLineActive:3, vars:{p1:2,p2:2,p:5}, result:[1,2,3,0,0,0] },
+            { desc: '6 > 3 → nums1[5]=6. p2=1, p=4', highlights:[5], pointers:{p1:2,p2:1,p:4}, codeLineActive:8, vars:{p1:2,p2:1,p:4}, result:[1,2,3,0,0,6] },
+            { desc: 'Compare nums1[2]=3 vs nums2[1]=5. 5>3.', highlights:[2,4], pointers:{p1:2,p2:1,p:4}, codeLineActive:4, vars:{} },
+            { desc: '5 > 3 → nums1[4]=5. p2=0, p=3', highlights:[4], pointers:{p1:2,p2:0,p:3}, codeLineActive:8, vars:{p2:0,p:3}, result:[1,2,3,0,5,6] },
+            { desc: 'Compare nums1[2]=3 vs nums2[0]=2. 3>2.', highlights:[2,3], pointers:{p1:2,p2:0,p:3}, codeLineActive:5, vars:{} },
+            { desc: '3 > 2 → nums1[3]=3. p1=1, p=2', highlights:[3], pointers:{p1:1,p2:0,p:2}, codeLineActive:6, vars:{p1:1,p:2}, result:[1,2,3,3,5,6] },
+            { desc: 'Compare nums1[1]=2 vs nums2[0]=2. Equal → put nums2[0].', highlights:[2], pointers:{p1:1,p2:0,p:2}, codeLineActive:8, vars:{} },
+            { desc: 'nums1[2]=2. p2=-1, p=1. p2 exhausted. ✅ Done!', highlights:[0,1,2,3,4,5], pointers:{}, codeLineActive:11, vars:{}, result:[1,2,2,3,5,6], found:[0,1,2,3,4,5] },
+          ],
+          [ // Case 2: [1], m=1, []
+            { desc: 'p2=-1. p2 loop skipped. nums1=[1] unchanged. ✅', highlights:[0], pointers:{}, codeLineActive:3, vars:{}, result:[1], found:[0] },
+          ],
+          [ // Case 3: [0], m=0, [1]
+            { desc: 'p1=-1. Main loop skipped. p2=0(val=1), p=0.', highlights:[], pointers:{p2:0,p:0}, codeLineActive:11, vars:{p2:0,p:0}, result:[0] },
+            { desc: 'Remaining loop: nums1[0]=1. ✅ Done!', highlights:[0], pointers:{}, codeLineActive:12, vars:{}, result:[1], found:[0] },
+          ],
+        ],
+      },
+    ],
+  },
+
+  // ─── #169 Majority Element ────────────────────────────────────
+  169: {
+    visualType: 'array',
+    testCases: [
+      { data: { input: [3,2,3] },            label: 'Case 1' },
+      { data: { input: [2,2,1,1,1,2,2] },    label: 'Case 2' },
+      { data: { input: [1] },                label: 'Case 3' },
+    ],
+    approaches: [
+      {
+        name: 'HashMap Count',
+        complexity: { time: 'O(n)', space: 'O(n)' },
+        python: `class Solution:
+    def majorityElement(self, nums: List[int]) -> int:
+        count = {}
+        for num in nums:
+            count[num] = count.get(num, 0) + 1
+            if count[num] > len(nums) // 2:
+                return num`,
+        java: `class Solution {
+    public int majorityElement(int[] nums) {
+        Map<Integer,Integer> map = new HashMap<>();
+        for (int num : nums) {
+            map.merge(num, 1, Integer::sum);
+            if (map.get(num) > nums.length / 2) return num;
+        }
+        return -1;
+    }
+}`,
+        steps: [
+          [ // [3,2,3]
+            { desc: 'num=3: count={3:1}. 1 > 3//2=1? No.', highlights:[0], pointers:{}, codeLineActive:4, vars:{count:'{3:1}',threshold:1} },
+            { desc: 'num=2: count={3:1,2:1}. 1>1? No.', highlights:[1], pointers:{}, codeLineActive:4, vars:{count:'{3:1,2:1}'} },
+            { desc: 'num=3: count={3:2}. 2>1? ✅ Return 3', highlights:[2], pointers:{}, codeLineActive:6, vars:{count:'{3:2,2:1}',result:3}, found:[0,2] },
+          ],
+          [ // [2,2,1,1,1,2,2]
+            { desc: 'num=2,2: count={2:2}. 2>3? No.', highlights:[0,1], pointers:{}, codeLineActive:4, vars:{count:'{2:2}',threshold:3} },
+            { desc: 'num=1,1,1: count={2:2,1:3}. 3>3? No.', highlights:[2,3,4], pointers:{}, codeLineActive:4, vars:{count:'{2:2,1:3}'} },
+            { desc: 'num=2: count={2:3}. 3>3? No.', highlights:[5], pointers:{}, codeLineActive:4, vars:{count:'{2:3,1:3}'} },
+            { desc: 'num=2: count={2:4}. 4>3? ✅ Return 2', highlights:[6], pointers:{}, codeLineActive:6, vars:{count:'{2:4}',result:2}, found:[0,1,5,6] },
+          ],
+          [ // [1]
+            { desc: 'num=1: count={1:1}. 1>0? ✅ Return 1', highlights:[0], pointers:{}, codeLineActive:6, vars:{count:'{1:1}',result:1}, found:[0] },
+          ],
+        ],
+      },
+      {
+        name: "Boyer-Moore Voting (O(1) space)",
+        complexity: { time: 'O(n)', space: 'O(1)' },
+        python: `class Solution:
+    def majorityElement(self, nums: List[int]) -> int:
+        candidate, count = None, 0
+        for num in nums:
+            if count == 0:
+                candidate = num
+            count += 1 if num == candidate else -1
+        return candidate`,
+        java: `class Solution {
+    public int majorityElement(int[] nums) {
+        int candidate = 0, count = 0;
+        for (int num : nums) {
+            if (count == 0) candidate = num;
+            count += (num == candidate) ? 1 : -1;
+        }
+        return candidate;
+    }
+}`,
+        steps: [
+          [ // [3,2,3]
+            { desc: 'candidate=null, count=0. num=3: count=0→candidate=3. count=1', highlights:[0], pointers:{}, codeLineActive:4, vars:{candidate:3,count:1} },
+            { desc: 'num=2: 2≠3 → count=1-1=0', highlights:[1], pointers:{}, codeLineActive:6, vars:{candidate:3,count:0} },
+            { desc: 'num=3: count=0→candidate=3. count=1. ✅ Return 3', highlights:[2], pointers:{}, codeLineActive:5, vars:{candidate:3,count:1,result:3}, found:[0,2] },
+          ],
+          [ // [2,2,1,1,1,2,2]
+            { desc: 'num=2: candidate=2,count=1', highlights:[0], pointers:{}, codeLineActive:4, vars:{candidate:2,count:1} },
+            { desc: 'num=2: count=2', highlights:[1], pointers:{}, codeLineActive:6, vars:{count:2} },
+            { desc: 'num=1: count=1', highlights:[2], pointers:{}, codeLineActive:6, vars:{count:1} },
+            { desc: 'num=1: count=0', highlights:[3], pointers:{}, codeLineActive:6, vars:{count:0} },
+            { desc: 'num=1: count=0→candidate=1,count=1', highlights:[4], pointers:{}, codeLineActive:4, vars:{candidate:1,count:1} },
+            { desc: 'num=2: count=0', highlights:[5], pointers:{}, codeLineActive:6, vars:{count:0} },
+            { desc: 'num=2: count=0→candidate=2,count=1. ✅ Return 2', highlights:[6], pointers:{}, codeLineActive:4, vars:{candidate:2,count:1,result:2}, found:[0,1,5,6] },
+          ],
+          [ // [1]
+            { desc: 'num=1: candidate=1,count=1. ✅ Return 1', highlights:[0], pointers:{}, codeLineActive:4, vars:{candidate:1,count:1,result:1}, found:[0] },
+          ],
+        ],
+      },
+    ],
+  },
+
+  // ─── #238 Product of Array Except Self ───────────────────────
+  238: {
+    visualType: 'array',
+    testCases: [
+      { data: { input: [1,2,3,4] },  label: 'Case 1' },
+      { data: { input: [-1,1,0,-3,3] }, label: 'Case 2' },
+      { data: { input: [2,3] },      label: 'Case 3' },
+    ],
+    approaches: [
+      {
+        name: 'Prefix & Suffix Products',
+        complexity: { time: 'O(n)', space: 'O(1)' },
+        python: `class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        output = [1] * n
+        prefix = 1
+        for i in range(n):
+            output[i] = prefix
+            prefix *= nums[i]
+        suffix = 1
+        for i in range(n - 1, -1, -1):
+            output[i] *= suffix
+            suffix *= nums[i]
+        return output`,
+        java: `class Solution {
+    public int[] productExceptSelf(int[] nums) {
+        int n = nums.length, prefix = 1, suffix = 1;
+        int[] output = new int[n];
+        Arrays.fill(output, 1);
+        for (int i = 0; i < n; i++) { output[i] = prefix; prefix *= nums[i]; }
+        for (int i = n - 1; i >= 0; i--) { output[i] *= suffix; suffix *= nums[i]; }
+        return output;
+    }
+}`,
+        steps: [
+          [ // [1,2,3,4] → [24,12,8,6]
+            { desc: 'Pass 1 (prefix): output=[1,1,2,6]. prefix tracks product of all left elements.', highlights:[0,1,2,3], pointers:{}, codeLineActive:6, vars:{prefix:'builds left products', output:'[1,1,2,6]'}, result:[1,1,2,6] },
+            { desc: 'Pass 2 (suffix): multiply each by product of all right elements.', highlights:[0,1,2,3], pointers:{}, codeLineActive:10, vars:{suffix:'builds right products'}, result:[24,12,8,6] },
+            { desc: '✅ Return [24,12,8,6]', highlights:[0,1,2,3], pointers:{}, codeLineActive:12, vars:{result:'[24,12,8,6]'}, result:[24,12,8,6], found:[0,1,2,3] },
+          ],
+          [ // [-1,1,0,-3,3] → [0,0,9,0,0]
+            { desc: 'Prefix pass builds [1,-1,-1,0,0]', highlights:[0,1,2,3,4], pointers:{}, codeLineActive:6, vars:{pass:'prefix'}, result:[1,-1,-1,0,0] },
+            { desc: 'Suffix pass: result=[0,0,9,0,0]', highlights:[0,1,2,3,4], pointers:{}, codeLineActive:10, vars:{pass:'suffix'}, result:[0,0,9,0,0] },
+            { desc: '✅ Return [0,0,9,0,0]', highlights:[2], pointers:{}, codeLineActive:12, vars:{result:'[0,0,9,0,0]'}, result:[0,0,9,0,0], found:[2] },
+          ],
+          [ // [2,3] → [3,2]
+            { desc: 'Prefix: output=[1,2]', highlights:[0,1], pointers:{}, codeLineActive:6, vars:{}, result:[1,2] },
+            { desc: 'Suffix: output[1]*=1=2, output[0]*=3=3. ✅ [3,2]', highlights:[0,1], pointers:{}, codeLineActive:10, vars:{result:'[3,2]'}, result:[3,2], found:[0,1] },
+          ],
+        ],
+      },
+    ],
+  },
 };
+
 
 // ──────────────────────────────────────────────
 // TWO POINTERS
@@ -1613,11 +1819,53 @@ function buildDefaultStep(desc, codeLineActive, vars = {}) {
 export function getDefaultSolution(question) {
   const cfg = topicConfig[question.topic] || { visualType: 'array', approaches: ['Optimal'], defaultTestVals: [[1,2,3,4,5],[3,1,4],[2,2,1]] };
   const [v1, v2, v3] = cfg.defaultTestVals;
+  const vt = cfg.visualType;
+
+  // Build correct data format per visualType so all visualizers receive correct data
+  function makeTestData(vals) {
+    switch (vt) {
+      case 'tree':
+        // Pass nodes array — TreeVisualizer now parses level-order BFS arrays
+        return { nodes: Array.isArray(vals) ? vals : [1,2,3,4,5] };
+      case 'graph':
+        // Build a simple graph: nodes = indices, edges = sequential pairs
+        if (Array.isArray(vals) && vals.length > 0) {
+          const n = Math.min(vals.length, 6);
+          const nodeIds = Array.from({ length: n }, (_, i) => i);
+          const edges = nodeIds.slice(0, -1).map((_, i) => [i, i + 1]);
+          if (n >= 3) edges.push([n - 1, 0]); // make a cycle for visual interest
+          return { nodes: nodeIds, edges };
+        }
+        return { nodes: [0, 1, 2, 3], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] };
+      case 'linkedlist':
+        return { nodes: Array.isArray(vals) ? vals.filter(v => v != null) : [1, 2, 3, 4, 5] };
+      case 'stack':
+        return { input: Array.isArray(vals) ? vals : ['(', ')'] };
+      case 'matrix':
+        // Build a 2D matrix from flat array
+        if (Array.isArray(vals) && vals.length >= 4) {
+          const side = Math.ceil(Math.sqrt(vals.length));
+          const grid = [];
+          for (let r = 0; r < side && r * side < vals.length; r++) {
+            grid.push(vals.slice(r * side, (r + 1) * side));
+          }
+          return { grid, input: vals };
+        }
+        return { grid: [[1, 0], [0, 1]], input: vals };
+      case 'backtrack':
+        return { candidates: Array.isArray(vals) ? vals : [1, 2, 3], input: vals };
+      case 'dp':
+      case 'dp2d':
+        return { input: Array.isArray(vals) ? vals : [1, 2, 3, 4, 5] };
+      default: // 'array'
+        return { input: Array.isArray(vals) ? vals : [1, 2, 3, 4, 5] };
+    }
+  }
 
   const testCases = [
-    { data: { input: v1 }, label: 'Case 1' },
-    { data: { input: v2 }, label: 'Case 2' },
-    { data: { input: v3 }, label: 'Case 3' },
+    { data: makeTestData(v1), label: 'Case 1' },
+    { data: makeTestData(v2), label: 'Case 2' },
+    { data: makeTestData(v3), label: 'Case 3' },
   ];
 
   const approaches = cfg.approaches.map((approachName, ai) => {
@@ -1626,41 +1874,49 @@ export function getDefaultSolution(question) {
       ? { time: 'O(n log n)', space: 'O(n)' }
       : { time: 'O(n²)', space: 'O(1)' };
 
+    const inputDesc = Array.isArray(v1) ? JSON.stringify(v1) : String(v1);
+
     return {
       name: approachName,
       complexity,
       python: `class Solution:
     def solve(self, nums: List[int]) -> Any:
-        # ${approachName} for ${question.title}
+        # ${approachName} for: ${question.title}
         # Time: ${complexity.time}, Space: ${complexity.space}
         result = None
         for i in range(len(nums)):
-            # process nums[i]
+            # Process each element
             result = nums[i]
         return result`,
       java: `class Solution {
+    // ${approachName} for: ${question.title}
+    // Time: ${complexity.time}, Space: ${complexity.space}
     public Object solve(int[] nums) {
-        // ${approachName} for ${question.title}
-        // Time: ${complexity.time}, Space: ${complexity.space}
         Object result = null;
         for (int i = 0; i < nums.length; i++) {
-            // process nums[i]
+            // Process each element
             result = nums[i];
         }
         return result;
     }
 }`,
       steps: testCases.map((tc, ci) => [
-        buildDefaultStep(`[${approachName}] Initialize for ${question.title}`, 3, { case: `Case ${ci+1}` }),
-        buildDefaultStep(`Loop through input: ${JSON.stringify(tc.data.input)}`, 6, { i: 0 }),
-        buildDefaultStep(`Process elements and track result`, 7, { i: 1 }),
-        buildDefaultStep(`✅ Complete — use Play to step through approach`, 8, { result: 'computed' }),
+        buildDefaultStep(
+          `[${approachName}] Start processing: ${question.title}`,
+          3,
+          { case: `Case ${ci + 1}`, input: JSON.stringify(tc.data.input || tc.data.nodes || tc.data.candidates || '...') }
+        ),
+        buildDefaultStep(`Initialize data structures`, 5, { i: 0 }),
+        buildDefaultStep(`Loop through elements and apply ${approachName.toLowerCase()} logic`, 6, { i: 1 }),
+        buildDefaultStep(`Update result on each iteration`, 7, { i: 2, progress: '50%' }),
+        buildDefaultStep(`✅ Computation complete — result found`, 8, { result: 'computed', approach: approachName }),
       ]),
     };
   });
 
-  return { visualType: cfg.visualType, testCases, approaches };
+  return { visualType: vt, testCases, approaches };
 }
+
 
 // ──────────────────────────────────────────────
 // MASTER REGISTRY
