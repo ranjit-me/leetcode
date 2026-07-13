@@ -332,16 +332,42 @@ def make_steps(test_case_data, visual_type, code_lines_count):
                 node_list = test_case_data.get('nodes', [])
                 node_val = node_list[min(idx, len(node_list)-1)] if (isinstance(node_list, list) and len(node_list) > 0) else idx
                 vars_watch = {"currentNode": node_val}
+            elif visual_type == 'stack':
+                inp_list = test_case_data.get('input', [])
+                simulated_stack = []
+                current_val = None
+                if isinstance(inp_list, list) and len(inp_list) > 0:
+                    current_val = inp_list[min(idx, len(inp_list)-1)]
+                    for step_idx in range(idx + 1):
+                        val = inp_list[min(step_idx, len(inp_list)-1)]
+                        if val in (')', ']', '}'):
+                            if simulated_stack:
+                                simulated_stack.pop()
+                        else:
+                            simulated_stack.append(val)
+                else:
+                    current_val = idx
+                    simulated_stack = [idx]
+                
+                pointers = {"top": len(simulated_stack) - 1} if simulated_stack else {}
+                vars_watch = {"current": current_val, "stack": simulated_stack}
             else:
                 vars_watch = {"step": idx}
                 
-        steps.append({
+        step_dict = {
             "desc": desc,
             "highlights": highlights,
             "pointers": pointers,
             "codeLineActive": active_lines[i],
             "vars": vars_watch
-        })
+        }
+        
+        if visual_type == 'stack':
+            # Populate visualizer-specific attributes
+            step_dict["stackState"] = vars_watch.get("stack", [])
+            step_dict["current"] = vars_watch.get("current", None)
+            
+        steps.append(step_dict)
         
     return steps
 
