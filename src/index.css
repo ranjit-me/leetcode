@@ -917,3 +917,42 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(16, 185, 129, 0.4);
   color: #10b981;
 }
+
+/* ── Live Variables Watch Panel ── */
+.viz-vars-panel {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+}
+.viz-vars-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.45rem;
+}
+.viz-vars-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+.viz-var-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.viz-var-name {
+  color: #60a5fa;
+  font-weight: 600;
+}
+.viz-var-eq {
+  color: #6b7280;
+}
+.viz-var-val {
+  color: #34d399;
+}

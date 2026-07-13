@@ -173,9 +173,16 @@ export default function VisualizerModal({ question, onClose }) {
 
   const progress = ((stepIdx + 1) / steps.length) * 100;
   const codeLines = highlightCode(activeCode, language);
-  const totalLines = codeLines.length;
-  const activeLineStart = Math.floor((stepIdx / steps.length) * totalLines);
-  const activeLineEnd   = Math.ceil(((stepIdx + 1) / steps.length) * totalLines);
+  // Use precise codeLineActive from step data, falling back to proportional estimate
+  const activeLine = currentStep?.codeLineActive ?? Math.floor((stepIdx / Math.max(steps.length - 1, 1)) * (codeLines.length - 1)) + 1;
+  const codeBodyRef = useRef(null);
+
+  // Auto-scroll the active code line into view
+  useEffect(() => {
+    if (!codeBodyRef.current) return;
+    const lineEl = codeBodyRef.current.querySelector('.viz-code-line.active');
+    if (lineEl) lineEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeLine]);
 
   return (
     <div className="viz-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -323,18 +330,34 @@ export default function VisualizerModal({ question, onClose }) {
             </div>
 
             {/* Code body with syntax highlighting */}
-            <div className="viz-code-body">
+            <div className="viz-code-body" ref={codeBodyRef}>
               <pre className="viz-code-pre">
                 {codeLines.map((lineObj, i) => (
                   <CodeLine
                     key={i}
                     line={lineObj}
-                    isActive={i >= activeLineStart && i < activeLineEnd}
+                    isActive={lineObj.lineNum === activeLine}
                     lang={language}
                   />
                 ))}
               </pre>
             </div>
+
+            {/* Live Variables Panel */}
+            {currentStep?.vars && Object.keys(currentStep.vars).length > 0 && (
+              <div className="viz-vars-panel">
+                <div className="viz-vars-title">📊 Variables</div>
+                <div className="viz-vars-grid">
+                  {Object.entries(currentStep.vars).map(([k, v]) => (
+                    <div key={k} className="viz-var-item">
+                      <span className="viz-var-name">{k}</span>
+                      <span className="viz-var-eq">=</span>
+                      <span className="viz-var-val">{JSON.stringify(v)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Step list */}
             <div className="viz-step-list">
