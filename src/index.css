@@ -1570,3 +1570,36 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.5;
 }
 
+/* Approach Toggle Row & Buttons */
+.viz-approach-toggle-row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.viz-approach-toggle-btn {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viz-approach-toggle-btn:hover {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.viz-approach-toggle-btn.active {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: #2563eb;
+  color: #3b82f6;
+}
+

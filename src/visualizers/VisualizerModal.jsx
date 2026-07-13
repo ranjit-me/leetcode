@@ -458,6 +458,20 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
                   </button>
                 </div>
               </div>
+              
+              {solution.approaches.length > 1 && (
+                <div className="viz-approach-toggle-row">
+                  {solution.approaches.map((ap, i) => (
+                    <button
+                      key={i}
+                      className={`viz-approach-toggle-btn ${i === approachIdx ? 'active' : ''}`}
+                      onClick={() => switchApproach(i)}
+                    >
+                      {ap.name}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="viz-code-panel-body" ref={codeBodyRef}>
                 <pre className="viz-code-panel-pre">
