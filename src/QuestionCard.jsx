@@ -186,6 +186,8 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
       {showVisualizer && createPortal(
         <VisualizerModal
           question={q}
+          isSolved={isSolved}
+          toggleSolved={toggleSolved}
           onClose={() => setShowVisualizer(false)}
         />,
         document.body

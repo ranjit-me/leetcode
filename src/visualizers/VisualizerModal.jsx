@@ -234,7 +234,7 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
   }, [activeLine]);
 
   return (
-    <div className="viz-overlay">
+    <div className="viz-overlay" onClick={(e) => e.stopPropagation()}>
       <div className="viz-modal">
 
         {/* ── TOP HEADER ── */}
