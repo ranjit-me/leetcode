@@ -956,3 +956,617 @@ h1, h2, h3, h4, h5, h6 {
 .viz-var-val {
   color: #34d399;
 }
+
+/* ──────────────────────────────────────────────────────────
+   NEW LEETCODE SPLIT-PANE WORKSPACE STYLING
+   ────────────────────────────────────────────────────────── */
+
+/* Full page visualizer overlay */
+.viz-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #090d16;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+
+.viz-modal {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100%;
+  max-height: 100vh;
+  background: #090d16;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Navbar */
+.viz-top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #0d1321;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.viz-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.viz-back-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.viz-back-btn:hover {
+  color: #94a3b8;
+}
+
+.viz-navbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.viz-navbar-badges {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.viz-badge-lc {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #f97316;
+  border-radius: 4px;
+  color: #f97316;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.viz-badge-diff {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.viz-badge-diff.diff-easy {
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+.viz-badge-diff.diff-medium {
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+}
+
+.viz-badge-diff.diff-hard {
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.viz-badge-topic {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #8b5cf6;
+  border-radius: 4px;
+  color: #8b5cf6;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.viz-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.viz-practice-btn {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.viz-practice-btn:hover {
+  opacity: 0.9;
+}
+
+.viz-status-dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.viz-status-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.viz-status-select {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Split Pane Workspace Body */
+.viz-workspace-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: #090d16;
+}
+
+.viz-workspace-left {
+  flex: 1.4;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.viz-workspace-right {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #0b0f19;
+}
+
+/* Panel Box Container Card */
+.viz-panel-box {
+  background: #0d1321;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.viz-panel-title {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.viz-panel-desc {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+/* Examples box inside problem statement */
+.viz-panel-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.viz-example-card {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.viz-example-num {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.viz-example-text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+.viz-panel-constraints {
+  margin-top: 0.5rem;
+}
+
+.viz-constraints-header {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.viz-constraints-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* Try Examples Buttons */
+.viz-try-buttons-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.viz-try-case-btn {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viz-try-case-btn:hover {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.viz-try-case-btn.active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+/* Custom Input Field */
+.viz-custom-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.75rem;
+}
+
+.viz-custom-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.viz-custom-input-field {
+  flex: 1;
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+}
+
+.viz-custom-run-btn {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 0.4rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.viz-custom-run-btn:hover {
+  opacity: 0.9;
+}
+
+/* Playback Control Bar */
+.viz-playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.viz-ctrl-btn {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viz-ctrl-btn:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.viz-ctrl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.viz-ctrl-btn-play {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 0.4rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.viz-ctrl-btn-play:hover {
+  opacity: 0.9;
+}
+
+.viz-speed-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.viz-speed-slider {
+  width: 80px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.viz-step-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-left: 1rem;
+}
+
+.viz-playback-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.viz-playback-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Visualizer Canvas Inner Frame */
+.viz-visualizer-canvas-inner {
+  min-height: 280px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+/* Variables grid */
+.viz-variables-flex {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.viz-var-card-box {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  min-width: 100px;
+}
+
+.viz-var-card-name {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.viz-var-card-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  color: #10b981;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+/* Alert Step Logic Box */
+.viz-step-logic-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.viz-step-logic-zap {
+  color: #3b82f6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Right Panel Box */
+.viz-right-panel-box {
+  background: #0d1321;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Code Panel Header */
+.viz-code-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.viz-code-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.viz-code-panel-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.viz-code-copy-btn, .viz-code-lang-btn {
+  background: #141b2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viz-code-copy-btn:hover, .viz-code-lang-btn:hover {
+  background: #1e293b;
+}
+
+.viz-code-lang-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.viz-code-panel-body {
+  height: 320px;
+  overflow-y: auto;
+  background: #070a13;
+  border-radius: 8px;
+  padding: 1rem 0;
+}
+
+.viz-code-panel-pre {
+  margin: 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
+/* Algorithm box */
+.viz-algo-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.viz-algo-step-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.viz-algo-step-number {
+  width: 20px;
+  height: 20px;
+  background: #1e293b;
+  border-radius: 50%;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.viz-algo-step-desc-text {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Complexity Cards Row */
+.viz-complexity-cards-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.viz-complexity-card-box {
+  flex: 1;
+  background: #0d1321;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.viz-complexity-card-lbl {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.viz-complexity-card-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.viz-why-it-works-content {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+

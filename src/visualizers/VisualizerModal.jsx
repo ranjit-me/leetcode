@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Play, Pause, SkipBack, SkipForward, ChevronLeft, ChevronRight, Zap, Clock, Database } from 'lucide-react';
+import { X, Play, Pause, ChevronLeft, ChevronRight, Zap } from 'lucide-react';
 import { getSolution } from '../data/solutions.js';
 import ArrayVisualizer from './engines/ArrayVisualizer.jsx';
 import TreeVisualizer from './engines/TreeVisualizer.jsx';
@@ -16,14 +16,6 @@ const SPEED_OPTIONS = [
   { label: '2×',  ms: 600  },
   { label: '3×',  ms: 300  },
 ];
-
-// Python syntax-aware keyword highlighting helpers
-const PYTHON_KEYWORDS = /\b(def|return|if|else|elif|for|while|in|not|and|or|True|False|None|class|import|from|as|pass|break|continue|lambda|yield|raise|try|except|finally|with|global|nonlocal|self)\b/g;
-const JAVA_KEYWORDS   = /\b(public|private|protected|static|void|int|boolean|char|long|double|float|String|return|if|else|for|while|new|class|interface|extends|implements|null|true|false|this|super|final|abstract|List|Map|Set|Queue|Deque|Arrays|Math|ArrayList|HashMap|HashSet|LinkedList|ArrayDeque|PriorityQueue|TreeNode|ListNode|Integer|Character)\b/g;
-const COMMENT_PY = /(#.*)$/gm;
-const COMMENT_JAVA = /(\/\/.*)$/gm;
-const STRING_LIT = /(".*?"|'.*?')/g;
-const NUMBER_LIT = /\b(\d+)\b/g;
 
 function highlightCode(code, lang) {
   if (!code) return [];
@@ -45,9 +37,7 @@ function VisualizerEngine({ visualType, step, data }) {
   }
 }
 
-// Token-coloured code line renderer
 function CodeLine({ line, isActive, lang }) {
-  // Very lightweight syntax colouring via inline spans
   const tokens = tokenize(line, lang);
   return (
     <div className={`viz-code-line ${isActive ? 'active' : ''}`}>
@@ -65,7 +55,6 @@ function tokenize(lineObj, lang) {
   const { raw, lineNum } = lineObj;
   if (!raw.trim()) return { lineNum, parts: [{ text: raw || ' ', color: 'inherit' }] };
 
-  // Detect comment
   const commentStart = lang === 'python' ? raw.indexOf('#') : raw.indexOf('//');
   if (commentStart !== -1) {
     const before = raw.slice(0, commentStart);
@@ -115,22 +104,30 @@ function coloriseSegment(text, lang) {
   return parts;
 }
 
-export default function VisualizerModal({ question, onClose }) {
-  const solution    = getSolution(question);
+export default function VisualizerModal({ question, isSolved, toggleSolved, onClose }) {
+  const solution = getSolution(question);
   const [approachIdx, setApproachIdx] = useState(0);
   const [stepIdx,     setStepIdx]     = useState(0);
   const [isPlaying,   setIsPlaying]   = useState(false);
   const [speedIdx,    setSpeedIdx]    = useState(1);
-  const [language,    setLanguage]    = useState('python'); // 'python' | 'java'
+  const [language,    setLanguage]    = useState('python'); 
   const [testCaseIdx, setTestCaseIdx] = useState(0);
+  const [customInputText, setCustomInputText] = useState('');
+  const [customCases, setCustomCases] = useState([]);
+  const [copied, setCopied] = useState(false);
+
+  const [status, setStatus] = useState(() => {
+    return localStorage.getItem(`status-${question.id}`) || (isSolved ? 'Solved' : '-- Not set --');
+  });
+
   const intervalRef = useRef(null);
 
+  const allTestCases = [...customCases, ...solution.testCases];
   const approach    = solution.approaches[approachIdx];
   const steps       = approach.steps[testCaseIdx] || approach.steps[0] || [];
   const currentStep = steps[stepIdx];
   const activeCode  = approach[language] || approach.python || '';
 
-  // ── Auto-play
   const stopPlay = useCallback(() => {
     clearInterval(intervalRef.current);
     intervalRef.current = null;
@@ -162,22 +159,74 @@ export default function VisualizerModal({ question, onClose }) {
   const goNext  = () => { if (stepIdx < steps.length - 1) setStepIdx(s => s + 1); else setIsPlaying(false); };
   const goPrev  = () => { if (stepIdx > 0) setStepIdx(s => s - 1); };
   const goFirst = () => { setStepIdx(0); setIsPlaying(false); };
-  const goLast  = () => { setStepIdx(steps.length - 1); setIsPlaying(false); };
 
-  // ESC to close
-  useEffect(() => {
-    const h = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [onClose]);
+  const handleStatusChange = (newStatus) => {
+    setStatus(newStatus);
+    localStorage.setItem(`status-${question.id}`, newStatus);
+    if (newStatus === 'Solved') {
+      if (!isSolved) toggleSolved(question.id);
+    } else {
+      if (isSolved) toggleSolved(question.id);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(activeCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRunCustom = () => {
+    if (!customInputText.trim()) return;
+    
+    let cleanText = customInputText.trim();
+    if (cleanText.startsWith('[') && cleanText.endsWith(']')) {
+      cleanText = cleanText.slice(1, -1);
+    }
+    const parts = cleanText.split(/[\s,]+/).map(x => {
+      const num = Number(x);
+      return isNaN(num) ? x : num;
+    });
+
+    let data = {};
+    if (solution.visualType === 'tree') {
+      data = { nodes: parts };
+    } else if (solution.visualType === 'graph') {
+      data = { nodes: parts.map((_, i) => i), edges: parts.slice(0, -1).map((_, i) => [i, i+1]) };
+    } else if (solution.visualType === 'linkedlist') {
+      data = { nodes: parts };
+    } else if (solution.visualType === 'stack') {
+      data = { input: parts };
+    } else if (solution.visualType === 'matrix') {
+      data = { grid: [parts], input: parts };
+    } else {
+      data = { input: parts };
+    }
+
+    const customCase = {
+      data,
+      label: `Custom: ${parts.slice(0,3).join(',')}`
+    };
+
+    setCustomCases(prev => [customCase, ...prev]);
+    setTestCaseIdx(0); 
+    setStepIdx(0);
+    setIsPlaying(false);
+  };
+
+  const formatTestCaseLabel = (tc) => {
+    const inp = tc.data.input || tc.data.nodes || tc.data.grid || tc.data.candidates;
+    if (Array.isArray(inp)) {
+      return JSON.stringify(inp);
+    }
+    return tc.label || 'Test Case';
+  };
 
   const progress = ((stepIdx + 1) / steps.length) * 100;
   const codeLines = highlightCode(activeCode, language);
-  // Use precise codeLineActive from step data, falling back to proportional estimate
   const activeLine = currentStep?.codeLineActive ?? Math.floor((stepIdx / Math.max(steps.length - 1, 1)) * (codeLines.length - 1)) + 1;
   const codeBodyRef = useRef(null);
 
-  // Auto-scroll the active code line into view
   useEffect(() => {
     if (!codeBodyRef.current) return;
     const lineEl = codeBodyRef.current.querySelector('.viz-code-line.active');
@@ -185,196 +234,282 @@ export default function VisualizerModal({ question, onClose }) {
   }, [activeLine]);
 
   return (
-    <div className="viz-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="viz-overlay">
       <div className="viz-modal">
 
-        {/* ── HEADER ── */}
-        <div className="viz-header">
-          <div className="viz-header-left">
-            <span className="viz-badge">🎬 Animated</span>
-            <div>
-              <h2 className="viz-title">#{question.id} — {question.title}</h2>
-              <span className="viz-topic">{question.topic} · {question.difficulty}</span>
-            </div>
-          </div>
-          <button className="viz-close" onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* ── APPROACH TABS ── */}
-        <div className="viz-approach-tabs">
-          {solution.approaches.map((ap, i) => (
-            <button
-              key={i}
-              className={`viz-tab ${i === approachIdx ? 'active' : ''}`}
-              onClick={() => switchApproach(i)}
-            >
-              <span className="viz-tab-num">{i + 1}</span>
-              {ap.name}
+        {/* ── TOP HEADER ── */}
+        <header className="viz-top-navbar">
+          <div className="viz-navbar-left">
+            <button className="viz-back-btn" onClick={onClose}>
+              ← Back to LeetCode Tracker
             </button>
-          ))}
-        </div>
-
-        {/* ── TEST CASES & COMPLEXITY ── */}
-        <div className="viz-mid-bar">
-          <div className="viz-testcases">
-            {solution.testCases?.map((tc, i) => (
-              <button
-                key={i}
-                className={`viz-testcase-btn ${i === testCaseIdx ? 'active' : ''}`}
-                onClick={() => switchTestCase(i)}
-              >
-                {tc.label || `Case ${i+1}`}
-              </button>
-            ))}
-          </div>
-          
-          <div className="viz-complexity">
-            <div className="viz-complex-item">
-              <Clock size={13} />
-              <span>Time: <strong>{approach.complexity.time}</strong></span>
-            </div>
-          <div className="viz-complex-divider" />
-            <div className="viz-complex-item">
-              <Database size={13} />
-              <span>Space: <strong>{approach.complexity.space}</strong></span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── MAIN BODY ── */}
-        <div className="viz-body">
-
-          {/* Animation Canvas */}
-          <div className="viz-canvas-col">
-            <div className="viz-progress-row">
-              <span className="viz-step-label">
-                Step <strong>{stepIdx + 1}</strong> of <strong>{steps.length}</strong>
+            <h1 className="viz-navbar-title">{question.title}</h1>
+            <div className="viz-navbar-badges">
+              <span className="viz-badge-lc">LC #{question.id}</span>
+              <span className={`viz-badge-diff diff-${question.difficulty.toLowerCase()}`}>
+                {question.difficulty.toUpperCase()}
               </span>
-              <div className="viz-progress-track">
-                <div className="viz-progress-fill" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-
-            <div className="viz-canvas">
-              <VisualizerEngine
-                visualType={solution.visualType}
-                step={currentStep}
-                data={solution.testCases?.[testCaseIdx]?.data}
-              />
-            </div>
-
-            <div className="viz-step-desc">
-              <Zap size={15} className="viz-step-icon" />
-              <span>{currentStep?.desc || 'Ready'}</span>
-            </div>
-
-            <div className="viz-controls">
-              <div className="viz-control-group">
-                <button className="viz-btn-icon" onClick={goFirst} title="First step" disabled={stepIdx === 0}>
-                  <SkipBack size={16} />
-                </button>
-                <button className="viz-btn-icon" onClick={goPrev} title="Previous" disabled={stepIdx === 0}>
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  className={`viz-btn-play ${isPlaying ? 'playing' : ''}`}
-                  onClick={() => setIsPlaying(p => !p)}
-                  title={isPlaying ? 'Pause' : 'Play'}
-                >
-                  {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                </button>
-                <button className="viz-btn-icon" onClick={goNext} title="Next" disabled={stepIdx === steps.length - 1}>
-                  <ChevronRight size={18} />
-                </button>
-                <button className="viz-btn-icon" onClick={goLast} title="Last step" disabled={stepIdx === steps.length - 1}>
-                  <SkipForward size={16} />
-                </button>
-              </div>
-
-              <div className="viz-speed-group">
-                {SPEED_OPTIONS.map((s, i) => (
-                  <button
-                    key={i}
-                    className={`viz-speed-btn ${i === speedIdx ? 'active' : ''}`}
-                    onClick={() => { setSpeedIdx(i); if (isPlaying) { stopPlay(); startPlay(); } }}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
+              <span className="viz-badge-topic">{question.topic}</span>
             </div>
           </div>
 
-          {/* ── CODE PANEL ── */}
-          <div className="viz-code-col">
+          <div className="viz-navbar-right">
+            <a 
+              href={question.link} 
+              target="_blank" 
+              rel="noreferrer"
+              className="viz-practice-btn"
+            >
+              Practice now
+            </a>
+            
+            <div className="viz-status-dropdown-container">
+              <span className="viz-status-label">STATUS</span>
+              <select 
+                value={status} 
+                onChange={(e) => handleStatusChange(e.target.value)}
+                className="viz-status-select"
+              >
+                <option value="-- Not set --">-- Not set --</option>
+                <option value="In progress">In progress</option>
+                <option value="Practice pending">Practice pending</option>
+                <option value="Solved">Solved</option>
+                <option value="Need to revise">Need to revise</option>
+              </select>
+            </div>
+          </div>
+        </header>
 
-            {/* Header with language switcher */}
-            <div className="viz-code-header">
-              <span className="viz-code-title">Working Code</span>
-              <div className="viz-lang-toggle">
-                <button
-                  className={`viz-lang-btn ${language === 'python' ? 'active' : ''}`}
-                  onClick={() => setLanguage('python')}
-                >
-                  🐍 Python
-                </button>
-                <button
-                  className={`viz-lang-btn ${language === 'java' ? 'active' : ''}`}
-                  onClick={() => setLanguage('java')}
-                >
-                  ☕ Java
-                </button>
+        {/* ── MAIN WORKSPACE ── */}
+        <div className="viz-workspace-body">
+          
+          {/* ── LEFT COLUMN ── */}
+          <div className="viz-workspace-left">
+            
+            {/* PROBLEM DESCRIPTION BOX */}
+            <section className="viz-panel-box">
+              <div className="viz-panel-title">PROBLEM</div>
+              <div className="viz-panel-desc">
+                {solution.description || question.description || 'Given the inputs, compute the required outputs using the active algorithmic constraints.'}
               </div>
-            </div>
 
-            {/* Code body with syntax highlighting */}
-            <div className="viz-code-body" ref={codeBodyRef}>
-              <pre className="viz-code-pre">
-                {codeLines.map((lineObj, i) => (
-                  <CodeLine
-                    key={i}
-                    line={lineObj}
-                    isActive={lineObj.lineNum === activeLine}
-                    lang={language}
-                  />
-                ))}
-              </pre>
-            </div>
-
-            {/* Live Variables Panel */}
-            {currentStep?.vars && Object.keys(currentStep.vars).length > 0 && (
-              <div className="viz-vars-panel">
-                <div className="viz-vars-title">📊 Variables</div>
-                <div className="viz-vars-grid">
-                  {Object.entries(currentStep.vars).map(([k, v]) => (
-                    <div key={k} className="viz-var-item">
-                      <span className="viz-var-name">{k}</span>
-                      <span className="viz-var-eq">=</span>
-                      <span className="viz-var-val">{JSON.stringify(v)}</span>
+              {solution.examples && solution.examples.length > 0 && (
+                <div className="viz-panel-examples">
+                  {solution.examples.map((ex, idx) => (
+                    <div key={idx} className="viz-example-card">
+                      <div className="viz-example-num">EXAMPLE {ex.example_num || idx + 1}</div>
+                      <pre className="viz-example-text">{ex.example_text}</pre>
                     </div>
                   ))}
                 </div>
+              )}
+
+              {solution.constraints && solution.constraints.length > 0 && (
+                <div className="viz-panel-constraints">
+                  <div className="viz-constraints-header">Constraints:</div>
+                  <ul className="viz-constraints-list">
+                    {solution.constraints.map((c, idx) => (
+                      <li key={idx}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+
+            {/* TRY EXAMPLES BOX */}
+            <section className="viz-panel-box">
+              <div className="viz-panel-title">TRY EXAMPLES</div>
+              <div className="viz-try-buttons-row">
+                {allTestCases.map((tc, i) => (
+                  <button
+                    key={i}
+                    className={`viz-try-case-btn ${i === testCaseIdx ? 'active' : ''}`}
+                    onClick={() => switchTestCase(i)}
+                  >
+                    {formatTestCaseLabel(tc)}
+                  </button>
+                ))}
               </div>
+              <div className="viz-custom-input-row">
+                <span className="viz-custom-label">Custom:</span>
+                <input
+                  type="text"
+                  className="viz-custom-input-field"
+                  placeholder="e.g. 1 2 1"
+                  value={customInputText}
+                  onChange={(e) => setCustomInputText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleRunCustom(); }}
+                />
+                <button className="viz-custom-run-btn" onClick={handleRunCustom}>
+                  Run
+                </button>
+              </div>
+            </section>
+
+            {/* PLAYBACK CONTROLS BOX */}
+            <section className="viz-panel-box">
+              <div className="viz-playback-controls">
+                <button className="viz-ctrl-btn" onClick={goPrev} disabled={stepIdx === 0}>
+                  ◀ Prev
+                </button>
+                <button
+                  className="viz-ctrl-btn-play"
+                  onClick={() => setIsPlaying(p => !p)}
+                >
+                  {isPlaying ? '⏸ Pause' : '▶ Play'}
+                </button>
+                <button className="viz-ctrl-btn" onClick={goNext} disabled={stepIdx === steps.length - 1}>
+                  Next ▶
+                </button>
+                <button className="viz-ctrl-btn" onClick={goFirst}>
+                  🔄 Reset
+                </button>
+
+                <div className="viz-speed-slider-group">
+                  <span className="viz-speed-label">Speed</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="3"
+                    value={speedIdx}
+                    onChange={(e) => {
+                      const newSpeedIdx = Number(e.target.value);
+                      setSpeedIdx(newSpeedIdx);
+                      if (isPlaying) {
+                        stopPlay();
+                        startPlay();
+                      }
+                    }}
+                    className="viz-speed-slider"
+                  />
+                  <span className="viz-speed-label">Slow</span>
+                </div>
+
+                <div className="viz-step-indicator">
+                  {stepIdx + 1} / {steps.length}
+                </div>
+              </div>
+
+              <div className="viz-playback-progress-track">
+                <div className="viz-playback-progress-fill" style={{ width: `${progress}%` }} />
+              </div>
+            </section>
+
+            {/* VISUALIZATION CANVAS */}
+            <section className="viz-panel-box">
+              <div className="viz-panel-title">{solution.visualType.toUpperCase()} VISUALIZATION</div>
+              <div className="viz-visualizer-canvas-inner">
+                <VisualizerEngine
+                  visualType={solution.visualType}
+                  step={currentStep}
+                  data={allTestCases[testCaseIdx]?.data}
+                />
+              </div>
+            </section>
+
+            {/* VARIABLES PANEL */}
+            {currentStep?.vars && Object.keys(currentStep.vars).length > 0 && (
+              <section className="viz-panel-box">
+                <div className="viz-panel-title">VARIABLES</div>
+                <div className="viz-variables-flex">
+                  {Object.entries(currentStep.vars).map(([k, v]) => (
+                    <div key={k} className="viz-var-card-box">
+                      <div className="viz-var-card-name">{k}</div>
+                      <div className="viz-var-card-val">{JSON.stringify(v)}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
 
-            {/* Step list */}
-            <div className="viz-step-list">
-              <div className="viz-step-list-title">Steps</div>
-              {steps.map((s, i) => (
-                <button
-                  key={i}
-                  className={`viz-step-item ${i === stepIdx ? 'active' : ''} ${i < stepIdx ? 'done' : ''}`}
-                  onClick={() => { setStepIdx(i); setIsPlaying(false); }}
-                >
-                  <span className="viz-step-num">{i + 1}</span>
-                  <span className="viz-step-text">{s.desc}</span>
-                </button>
-              ))}
-            </div>
+            {/* STEP LOGIC BOX */}
+            <section className="viz-panel-box">
+              <div className="viz-panel-title">STEP LOGIC</div>
+              <div className="viz-step-logic-alert">
+                <Zap size={16} className="viz-step-logic-zap" />
+                <span>{currentStep?.desc || 'Initializing...'}</span>
+              </div>
+            </section>
+
           </div>
+
+          {/* ── RIGHT COLUMN ── */}
+          <div className="viz-workspace-right">
+            
+            {/* WORKING CODE BOX */}
+            <section className="viz-right-panel-box">
+              <div className="viz-code-panel-header">
+                <h3 className="viz-code-panel-title">{question.title}</h3>
+                <div className="viz-code-panel-controls">
+                  <button className="viz-code-copy-btn" onClick={handleCopy}>
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                  <button 
+                    className={`viz-code-lang-btn ${language === 'java' ? 'active' : ''}`}
+                    onClick={() => setLanguage('java')}
+                  >
+                    Java
+                  </button>
+                  <button 
+                    className={`viz-code-lang-btn ${language === 'python' ? 'active' : ''}`}
+                    onClick={() => setLanguage('python')}
+                  >
+                    Python
+                  </button>
+                </div>
+              </div>
+
+              <div className="viz-code-panel-body" ref={codeBodyRef}>
+                <pre className="viz-code-panel-pre">
+                  {codeLines.map((lineObj, i) => (
+                    <CodeLine
+                      key={i}
+                      line={lineObj}
+                      isActive={lineObj.lineNum === activeLine}
+                      lang={language}
+                    />
+                  ))}
+                </pre>
+              </div>
+            </section>
+
+            {/* ALGORITHM BOX */}
+            <section className="viz-right-panel-box">
+              <div className="viz-panel-title">ALGORITHM</div>
+              <div className="viz-algo-steps-list">
+                {(approach.algorithm || []).map((step, idx) => (
+                  <div key={idx} className="viz-algo-step-row">
+                    <span className="viz-algo-step-number">{idx + 1}</span>
+                    <span className="viz-algo-step-desc-text">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* COMPLEXITY CARDS */}
+            <section className="viz-complexity-cards-row">
+              <div className="viz-complexity-card-box">
+                <span className="viz-complexity-card-lbl">Time Complexity</span>
+                <span className="viz-complexity-card-val">{approach.complexity.time}</span>
+              </div>
+              <div className="viz-complexity-card-box">
+                <span className="viz-complexity-card-lbl">Space Complexity</span>
+                <span className="viz-complexity-card-val">{approach.complexity.space}</span>
+              </div>
+            </section>
+
+            {/* WHY IT WORKS BOX */}
+            <section className="viz-right-panel-box">
+              <div className="viz-panel-title">WHY IT WORKS</div>
+              <div className="viz-why-it-works-content">
+                {approach.whyItWorks || 'Efficient implementation using optimal algorithms.'}
+              </div>
+            </section>
+
+          </div>
+
         </div>
+
       </div>
     </div>
   );

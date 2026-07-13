@@ -24,6 +24,68 @@ except Exception as e:
     print("Error downloading neenza database:", e)
     neenza_questions = {}
 
+def get_algorithm_steps(topic, title, visual_type):
+    if visual_type == 'tree':
+        return [
+            "Traverse the binary tree using Depth First Search (DFS)",
+            "For each node visited, check if it matches the target criteria",
+            "Recursively solve the left and right subtrees",
+            "Combine the sub-results and return the final answer"
+        ]
+    elif visual_type == 'graph':
+        return [
+            "Initialize a visited set or grid to track visited vertices",
+            "Begin traversal (DFS/BFS) from the starting nodes",
+            "Explore neighbors recursively or via queue state",
+            "Process components and return the final connectivity results"
+        ]
+    elif visual_type == 'linkedlist':
+        return [
+            "Initialize pointers to track current and previous nodes",
+            "Traverse the list element-by-element to access values",
+            "Perform in-place pointer redirections as needed",
+            "Return the head of the modified linked list"
+        ]
+    elif visual_type == 'stack':
+        return [
+            "Initialize an empty stack to track elements",
+            "Iterate through input string or tokens",
+            "Push opening tokens, or pop and match on closing tokens",
+            "Verify stack is empty and return the validation outcome"
+        ]
+    elif visual_type == 'matrix':
+        return [
+            "Determine the rows and columns dimensions of the grid",
+            "Iterate through coordinates using nested loops",
+            "Perform in-place swaps or boundary updates",
+            "Return the updated matrix layout"
+        ]
+    elif visual_type == 'backtrack':
+        return [
+            "Initialize a tracking list to hold current paths",
+            "Define backtracking recursion helper with start state",
+            "Loop through candidates, adding to state and recursing",
+            "Pop last element to backtrack and try other branches"
+        ]
+    elif visual_type == 'dp' or visual_type == 'dp2d':
+        return [
+            "Define DP state array/grid representation",
+            "Initialize base cases for starting indexes",
+            "Iterate through states using transition relations",
+            "Return the final cell value containing target result"
+        ]
+    else: # array
+        return [
+            "Scan the elements of the input array sequentially",
+            "Maintain pointers or lookup hash table for elements",
+            "Check condition on each element to update progress",
+            "Return the collected result array or index"
+        ]
+
+def get_why_it_works(topic, title, visual_type):
+    return f"This optimal approach efficiently processes the input by utilizing the properties of {topic}. It avoids redundant computations by using space-efficient lookups or in-place pointer mutations, leading to a highly optimized runtime complexity."
+
+
 # Topic config mapper for visualTypes
 TOPIC_TO_VISUAL_TYPE = {
     'Arrays & Hashing': 'array',
@@ -342,6 +404,8 @@ def process_question(q):
         "complexity": {"time": "O(N)", "space": "O(1)"},
         "python": py_code,
         "java": java_code,
+        "algorithm": get_algorithm_steps(topic, title, visual_type),
+        "whyItWorks": get_why_it_works(topic, title, visual_type),
         "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
     })
     
@@ -349,7 +413,10 @@ def process_question(q):
         "id": q_id,
         "visualType": visual_type,
         "testCases": testCases,
-        "approaches": approaches
+        "approaches": approaches,
+        "description": nz_q.get('description', '') if nz_q else '',
+        "examples": nz_q.get('examples', []) if nz_q else [],
+        "constraints": nz_q.get('constraints', []) if nz_q else []
     }
 
 # Process all questions concurrently with a thread pool!
@@ -396,12 +463,17 @@ with open(output_path, 'w') as out_f:
     complexity: {json.dumps(ap['complexity'])},
     python: {json.dumps(ap['python'])},
     java: {json.dumps(ap['java'])},
+    algorithm: {json.dumps(ap.get('algorithm', []))},
+    whyItWorks: {json.dumps(ap.get('whyItWorks', ''))},
     steps: {json.dumps(ap['steps'], indent=4)}
   }}""")
         approaches_str = "[\n" + ",\n".join(ap_strs) + "\n]"
         
         out_f.write(f"""  {q_id}: {{
     visualType: {json.dumps(visual_type)},
+    description: {json.dumps(q_data.get('description', ''))},
+    examples: {json.dumps(q_data.get('examples', []), indent=2)},
+    constraints: {json.dumps(q_data.get('constraints', []), indent=2)},
     testCases: {test_cases_str},
     approaches: {approaches_str}
   }},\n""")
