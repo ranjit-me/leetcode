@@ -280,6 +280,15 @@ def make_test_data(inp_dict, visual_type):
         if key in inp_dict:
             normalized[key] = inp_dict[key]
             
+    # Normalize multiple list inputs
+    lists = [v for k, v in inp_dict.items() if isinstance(v, list)]
+    if len(lists) >= 2:
+        normalized['input'] = lists[0]
+        normalized['input2'] = lists[1]
+        normalized['inputB'] = lists[1]
+        normalized['nodes'] = lists[0]
+        normalized['nodes2'] = lists[1]
+            
     return normalized
 
 def make_steps(test_case_data, visual_type, code_lines_count):
@@ -424,16 +433,21 @@ def process_question(q):
     
     # Build approaches
     approaches = []
-    # 1. Optimal approach
-    approaches.append({
-        "name": "Optimal Approach",
-        "complexity": {"time": "O(N)", "space": "O(1)"},
-        "python": py_code,
-        "java": java_code,
-        "algorithm": get_algorithm_steps(topic, title, visual_type),
-        "whyItWorks": get_why_it_works(topic, title, visual_type),
-        "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
-    })
+    from arrays_hashing_solutions import get_premium_approaches
+    premium_ap = get_premium_approaches(q_id, title, topic, testCases, visual_type, code_lines_count)
+    if premium_ap:
+        approaches = premium_ap
+    else:
+        # 1. Optimal approach
+        approaches.append({
+            "name": "Optimal Approach",
+            "complexity": {"time": "O(N)", "space": "O(1)"},
+            "python": py_code,
+            "java": java_code,
+            "algorithm": get_algorithm_steps(topic, title, visual_type),
+            "whyItWorks": get_why_it_works(topic, title, visual_type),
+            "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
+        })
     
     return {
         "id": q_id,
