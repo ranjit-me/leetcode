@@ -21,18 +21,20 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
   return (
     <div 
       className="question-card" 
+      onClick={() => setShowVisualizer(true)}
       style={{ 
         flexDirection: 'column', 
         alignItems: 'stretch', 
         padding: '1.25rem',
         background: isSolved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.03)',
         borderColor: isSolved ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
-        gap: 0
+        gap: 0,
+        cursor: 'pointer'
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%' }}>
         <button 
-          onClick={() => toggleSolved(q.id)}
+          onClick={(e) => { e.stopPropagation(); toggleSolved(q.id); }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '1rem', color: isSolved ? 'var(--success)' : 'var(--text-muted)' }}
         >
           {isSolved ? <CheckCircle size={24} /> : <Circle size={24} />}
@@ -52,7 +54,7 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <button
-            onClick={() => setExpanded(!expanded)}
+            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
             className="btn"
             style={{ 
               background: expanded ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -70,7 +72,7 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
           </button>
 
           <button
-            onClick={() => setShowVisualizer(true)}
+            onClick={(e) => { e.stopPropagation(); setShowVisualizer(true); }}
             className="btn btn-visualize"
             style={{
               padding: '0.5rem 1rem',
@@ -89,6 +91,7 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
             target="_blank" 
             rel="noreferrer"
             className="btn btn-secondary"
+            onClick={(e) => { e.stopPropagation(); }}
             style={{ textDecoration: 'none', padding: '0.5rem 1rem' }}
           >
             Solve <ExternalLink size={16} />
@@ -97,7 +100,10 @@ function QuestionCard({ q, isSolved, toggleSolved, savedCodes, onSaveCode, onDel
       </div>
 
       {expanded && (
-        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+        >
           
           {/* List of saved codes */}
           {questionCodes.length > 0 && (
