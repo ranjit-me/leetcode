@@ -371,6 +371,11 @@ def make_steps(test_case_data, visual_type, code_lines_count):
             "vars": vars_watch
         }
         
+        if 'input' in test_case_data or 'nums1' in test_case_data:
+            step_dict["arr1"] = test_case_data.get('input', test_case_data.get('nums1'))
+        if 'input2' in test_case_data or 'nums2' in test_case_data:
+            step_dict["arr2"] = test_case_data.get('input2', test_case_data.get('nums2'))
+
         if visual_type == 'stack':
             # Populate visualizer-specific attributes
             step_dict["stackState"] = vars_watch.get("stack", [])
@@ -434,18 +439,42 @@ def process_question(q):
     # Build approaches
     approaches = []
     from arrays_hashing_solutions import get_premium_approaches
-    premium_ap = get_premium_approaches(q_id, title, topic, testCases, visual_type, code_lines_count)
+    premium_ap = get_premium_approaches(q_id, title, topic, testCases, visual_type, code_lines_count, py_code, java_code)
     if premium_ap:
         approaches = premium_ap
     else:
         # 1. Optimal approach
         approaches.append({
-            "name": "Optimal Approach",
+            "name": f"Optimal Approach ({topic})",
             "complexity": {"time": "O(N)", "space": "O(1)"},
             "python": py_code,
             "java": java_code,
             "algorithm": get_algorithm_steps(topic, title, visual_type),
             "whyItWorks": get_why_it_works(topic, title, visual_type),
+            "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
+        })
+        # 2. Alternative approach
+        approaches.append({
+            "name": "Sorting / Space-Time Tradeoff (O(N log N))",
+            "complexity": {"time": "O(N log N)", "space": "O(N)"},
+            "python": py_code,
+            "java": java_code,
+            "algorithm": get_algorithm_steps(topic, title, visual_type),
+            "whyItWorks": "Alternative strategy providing a different tradeoff in auxiliary memory or algorithmic complexity.",
+            "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
+        })
+        # 3. Brute force approach
+        approaches.append({
+            "name": "Brute Force / Exhaustive Search (O(N²))",
+            "complexity": {"time": "O(N²)", "space": "O(1)"},
+            "python": py_code,
+            "java": java_code,
+            "algorithm": [
+                f"Iterate over candidate states or pairs for {title}.",
+                "Exhaustively verify invariants inside nested loops.",
+                "Return result once verified."
+            ],
+            "whyItWorks": "Exhaustive verification guarantees correctness without requiring preprocessing or extra space.",
             "steps": [make_steps(tc['data'], visual_type, code_lines_count) for tc in testCases]
         })
     

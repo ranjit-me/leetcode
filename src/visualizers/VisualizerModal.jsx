@@ -110,7 +110,7 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
   const [stepIdx,     setStepIdx]     = useState(0);
   const [isPlaying,   setIsPlaying]   = useState(false);
   const [speedIdx,    setSpeedIdx]    = useState(1);
-  const [language,    setLanguage]    = useState('python'); 
+  const [language,    setLanguage]    = useState('java'); 
   const [testCaseIdx, setTestCaseIdx] = useState(0);
   const [customInputText, setCustomInputText] = useState('');
   const [customCases, setCustomCases] = useState([]);
@@ -126,7 +126,7 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
   const approach    = solution.approaches[approachIdx];
   const steps       = approach.steps[testCaseIdx] || approach.steps[0] || [];
   const currentStep = steps[stepIdx];
-  const activeCode  = approach[language] || approach.python || '';
+  const activeCode  = approach[language] || approach.java || approach.python || '';
 
   const stopPlay = useCallback(() => {
     clearInterval(intervalRef.current);
@@ -461,6 +461,7 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
               
               {solution.approaches.length > 1 && (
                 <div className="viz-approach-toggle-row">
+                  <span className="viz-approach-label">APPROACH:</span>
                   {solution.approaches.map((ap, i) => (
                     <button
                       key={i}
@@ -489,7 +490,7 @@ export default function VisualizerModal({ question, isSolved, toggleSolved, onCl
 
             {/* ALGORITHM BOX */}
             <section className="viz-right-panel-box">
-              <div className="viz-panel-title">ALGORITHM</div>
+              <div className="viz-panel-title">ALGORITHM — {approach.name}</div>
               <div className="viz-algo-steps-list">
                 {(approach.algorithm || []).map((step, idx) => (
                   <div key={idx} className="viz-algo-step-row">

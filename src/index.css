@@ -1578,6 +1578,15 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-wrap: wrap;
   margin-top: 0.25rem;
+  align-items: center;
+}
+
+.viz-approach-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-right: 0.25rem;
 }
 
 .viz-approach-toggle-btn {
